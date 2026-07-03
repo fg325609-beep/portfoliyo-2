@@ -12,6 +12,9 @@ export default function ProjectCard({ project, index = 0 }) {
   const glowX = useTransform(x, [-0.5, 0.5], ['0%', '100%'])
   const glowY = useTransform(y, [-0.5, 0.5], ['0%', '100%'])
 
+  const shadowX = useSpring(useTransform(x, [-0.5, 0.5], [15, -15]), { stiffness: 200, damping: 20 })
+  const shadowY = useSpring(useTransform(y, [-0.5, 0.5], [15, -15]), { stiffness: 200, damping: 20 })
+
   const handleMouseMove = (e) => {
     const rect = ref.current.getBoundingClientRect()
     x.set((e.clientX - rect.left) / rect.width - 0.5)
@@ -35,7 +38,15 @@ export default function ProjectCard({ project, index = 0 }) {
         ref={ref}
         onMouseMove={handleMouseMove}
         onMouseLeave={reset}
-        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+        style={{
+          rotateX,
+          rotateY,
+          transformStyle: 'preserve-3d',
+          boxShadow: useTransform(
+            [shadowX, shadowY],
+            (sx, sy) => `${sx}px ${sy}px 30px rgba(45,212,191,0.2), ${-sx}px ${-sy}px 30px rgba(56,189,248,0.1)`
+          ),
+        }}
         className="glass group relative overflow-hidden rounded-2xl p-6"
       >
         <motion.div

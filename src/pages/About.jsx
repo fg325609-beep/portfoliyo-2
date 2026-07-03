@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { useRef } from 'react'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { MapPin, Users, Code2, Sparkles } from 'lucide-react'
 import SkillBar from '../components/SkillBar'
 
@@ -12,6 +13,52 @@ const skills = [
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+}
+
+function TiltCard({ children, className = '' }) {
+  const ref = useRef(null)
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [6, -6]), { stiffness: 200, damping: 20 })
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-6, 6]), { stiffness: 200, damping: 20 })
+  const glowX = useTransform(x, [-0.5, 0.5], ['0%', '100%'])
+  const glowY = useTransform(y, [-0.5, 0.5], ['0%', '100%'])
+
+  const handleMouseMove = (e) => {
+    const rect = ref.current.getBoundingClientRect()
+    x.set((e.clientX - rect.left) / rect.width - 0.5)
+    y.set((e.clientY - rect.top) / rect.height - 0.5)
+  }
+
+  const reset = () => {
+    x.set(0)
+    y.set(0)
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={reset}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: 'preserve-3d',
+      }}
+      className={`glass group relative overflow-hidden rounded-2xl p-6 ${className}`}
+    >
+      <motion.div
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background: `radial-gradient(circle at ${glowX} ${glowY}, rgba(45,212,191,0.15), transparent 60%)`,
+        }}
+      />
+      <div style={{ transform: 'translateZ(30px)' }} className="relative z-10">
+        {children}
+      </div>
+    </motion.div>
+  )
 }
 
 export default function About() {
@@ -34,45 +81,25 @@ export default function About() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 sm:grid-rows-2">
           {/* Location */}
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.4 }}
-            variants={fadeUp}
-            className="glass col-span-1 flex flex-col justify-between rounded-2xl p-6 sm:col-span-2"
-          >
+          <TiltCard className="col-span-1 flex flex-col justify-between sm:col-span-2">
             <MapPin className="text-teal-glow" size={22} />
             <div>
               <p className="font-display text-lg font-semibold text-ink">Uzbekistan</p>
-              <p className="font-mono text-xs text-ink-muted">based &amp; open to remote roles</p>
+              <p className="font-mono text-xs text-ink-muted">based & open to remote roles</p>
             </div>
-          </motion.div>
+          </TiltCard>
 
           {/* Experience */}
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.4 }}
-            variants={fadeUp}
-            transition={{ delay: 0.08 }}
-            className="glass col-span-1 flex flex-col justify-between rounded-2xl p-6 sm:col-span-2"
-          >
+          <TiltCard className="col-span-1 flex flex-col justify-between sm:col-span-2">
             <Users className="text-sky-glow" size={22} />
             <div>
               <p className="font-display text-lg font-semibold text-ink">7 months</p>
               <p className="font-mono text-xs text-ink-muted">embedded in an IT team, shipping features</p>
             </div>
-          </motion.div>
+          </TiltCard>
 
           {/* Skills bento — big cell */}
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeUp}
-            transition={{ delay: 0.12 }}
-            className="glass col-span-1 row-span-2 rounded-2xl p-6 sm:col-span-2"
-          >
+          <TiltCard className="col-span-1 row-span-2 sm:col-span-2">
             <div className="mb-5 flex items-center gap-2">
               <Code2 size={18} className="text-teal-glow" />
               <p className="font-display text-sm font-semibold text-ink">Core stack</p>
@@ -82,38 +109,24 @@ export default function About() {
                 <SkillBar key={s.name} name={s.name} level={s.level} index={i} />
               ))}
             </div>
-          </motion.div>
+          </TiltCard>
 
           {/* Highlight quote */}
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.4 }}
-            variants={fadeUp}
-            transition={{ delay: 0.16 }}
-            className="glass col-span-1 rounded-2xl p-6 sm:col-span-2"
-          >
+          <TiltCard className="col-span-1 sm:col-span-2">
             <Sparkles className="mb-3 text-sky-glow" size={20} />
             <p className="text-sm leading-relaxed text-ink-muted">
               I care about the details most users never notice — the 200ms transition, the
               focus ring, the empty state that actually helps.
             </p>
-          </motion.div>
+          </TiltCard>
 
           {/* Working style */}
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.4 }}
-            variants={fadeUp}
-            transition={{ delay: 0.2 }}
-            className="glass col-span-1 rounded-2xl p-6 sm:col-span-2"
-          >
+          <TiltCard className="col-span-1 sm:col-span-2">
             <p className="font-display text-lg font-semibold text-ink">Ship, review, iterate</p>
             <p className="mt-2 font-mono text-xs text-ink-muted">
               comfortable in fast-moving, code-review-driven workflows
             </p>
-          </motion.div>
+          </TiltCard>
         </div>
       </div>
     </section>
