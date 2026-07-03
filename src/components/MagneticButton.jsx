@@ -16,7 +16,7 @@ export default function MagneticButton({ children, className = '', as = 'button'
 
   const reset = () => setPos({ x: 0, y: 0 })
 
-  const Comp = motion[as] || motion.button
+  const Comp = typeof as === 'string' ? motion[as] : motion.create(as)
 
   return (
     <Comp

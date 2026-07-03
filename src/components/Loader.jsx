@@ -1,31 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Loader({ onDone }) {
   const [progress, setProgress] = useState(0)
   const [visible, setVisible] = useState(true)
+  const onDoneRef = useRef(onDone)
+  onDoneRef.current = onDone
 
   useEffect(() => {
     const start = Date.now()
     const duration = 1400
-    let frame
 
     const tick = () => {
       const elapsed = Date.now() - start
       const pct = Math.min(100, Math.round((elapsed / duration) * 100))
       setProgress(pct)
       if (pct < 100) {
-        frame = requestAnimationFrame(tick)
+        requestAnimationFrame(tick)
       } else {
-        setTimeout(() => setVisible(false), 350)
+        setTimeout(() => {
+          setVisible(false)
+          setTimeout(() => onDoneRef.current(), 500)
+        }, 350)
       }
     }
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
+    requestAnimationFrame(tick)
   }, [])
 
   return (
-    <AnimatePresence onExitComplete={onDone}>
+    <AnimatePresence>
       {visible && (
         <motion.div
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-void"

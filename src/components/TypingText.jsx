@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function TypingText({
   words = ['Frontend Developer'],
@@ -10,20 +10,35 @@ export default function TypingText({
   const [wordIndex, setWordIndex] = useState(0)
   const [text, setText] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
     const current = words[wordIndex % words.length]
     let timeout
 
     if (!deleting && text.length < current.length) {
-      timeout = setTimeout(() => setText(current.slice(0, text.length + 1)), typingSpeed)
+      timeout = setTimeout(() => {
+        if (mountedRef.current) setText(current.slice(0, text.length + 1))
+      }, typingSpeed)
     } else if (!deleting && text.length === current.length) {
-      timeout = setTimeout(() => setDeleting(true), pause)
+      timeout = setTimeout(() => {
+        if (mountedRef.current) setDeleting(true)
+      }, pause)
     } else if (deleting && text.length > 0) {
-      timeout = setTimeout(() => setText(current.slice(0, text.length - 1)), deletingSpeed)
+      timeout = setTimeout(() => {
+        if (mountedRef.current) setText(current.slice(0, text.length - 1))
+      }, deletingSpeed)
     } else if (deleting && text.length === 0) {
-      setDeleting(false)
-      setWordIndex((i) => i + 1)
+      if (mountedRef.current) {
+        setDeleting(false)
+        setWordIndex((i) => i + 1)
+      }
     }
 
     return () => clearTimeout(timeout)
